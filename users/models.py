@@ -26,9 +26,12 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_staff', True)
 
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
 
         return self._create_user(email, password, **extra_fields)
 
@@ -50,28 +53,31 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
     def __str__(self):
-        # return f"{self.email} - {self.first_name} {self.last_name}"
-        pass
+        return '{}-{}{}'.format(self.email, self.first_name, self.last_name)
 
 
-class Leaves(models.Model):
+class LeaveBalance(models.Model):
     LEAVE_TYPE = (("cl", "Casual Leaves"), ("el", "Earned Leaves"), ("sl", "Sick Leaves"), ("ml", "Maternity Leaves"))
-    LEAVE_STATUS = [("draft", "Draft"), ("sent_for_approval", "Send For Approval"), ("approved", "Approved"), ("cancel", "Cancel")]
-    name = models.CharField(max_length=50, blank=True, default='Users Leaves')
-    leave_type = models.CharField(max_length=5, choices=LEAVE_TYPE)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    Leave_Type = models.CharField(max_length=10, choices=LEAVE_TYPE)
+    Available_Days = models.PositiveIntegerField(default=0, help_text='Remaining/available leave days per user')
+    Allocated_Days = models.PositiveIntegerField(default=0, help_text='No of leave days allocated to a leave type per '
+                                                                      'user per year')
+
+    def __str__(self):
+        return '%s %s Leaves' % (self.user_id, self.Leave_Type)
+
+
+class LeavesRequest(models.Model):
+    LEAVE_STATUS = [("draft", "Draft"), ("approved", "Approved"), ("cancel", "Cancel")]
+    leave_type = models.ForeignKey(LeaveBalance, on_delete=models.CASCADE)
     state = models.CharField(max_length=20, choices=LEAVE_STATUS)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     from_date = models.DateTimeField()
     to_date = models.DateTimeField()
     requested_days = models.FloatField()
-    allocated_days = models.FloatField()
-    remaining_leaves = models.FloatField()
-    allocation_date = models.DateField()
-    create_date = models.DateTimeField(auto_now_add=True)
-    write_date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return ''+str(self.name)
-
-
+        return ''+str(self.leave_type)

@@ -1,10 +1,11 @@
 from rest_framework import routers
 
-from .views import AuthViewSet, LeavesViewSet
+from .views import AuthViewSet, LeavesBalanceViewSet, LeavesRequestViewSet
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register('api/auth', AuthViewSet, basename='auth')
-router.register('api/leaves', LeavesViewSet, basename='leaves')
+router.register('api/leave_balance', LeavesBalanceViewSet, basename='balance')
+router.register('api/leave_request', LeavesRequestViewSet, basename='request')
 
 urlpatterns = router.urls
 

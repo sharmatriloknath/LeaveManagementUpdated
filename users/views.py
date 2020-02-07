@@ -7,14 +7,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from . import serializers
 from .utils import get_and_authenticate_user, create_user_account
-from .models import Leaves
+from .models import LeaveBalance, LeavesRequest
 
 User = get_user_model()
 
 
 class AuthViewSet(viewsets.GenericViewSet):
-    def get_queryset(self):
-        pass
+    queryset=User.objects.all()
     permission_classes = [AllowAny, ]
     serializer_class = serializers.EmptySerializer
     serializer_classes = {
@@ -82,6 +81,14 @@ class AuthViewSet(viewsets.GenericViewSet):
         return super().get_serializer_class()
 
 
-class LeavesViewSet(ModelViewSet):
-    serializer_class = serializers.LeavesSerializers
-    queryset = Leaves.objects.all()
+class LeavesBalanceViewSet(ModelViewSet):
+    serializer_class = serializers.LeaveBalanceSerializer
+    queryset = LeaveBalance.objects.all()
+    # permission_classes = [IsAuthenticated, ]
+
+
+class LeavesRequestViewSet(ModelViewSet):
+    serializer_class = serializers.LeavesRequestSerializers
+    queryset = LeavesRequest.objects.all()
+    # permission_classes = [IsAuthenticated, ]
+

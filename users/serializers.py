@@ -2,8 +2,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.models import BaseUserManager
-from .models import Leaves
-
+from .models import LeaveBalance, LeavesRequest
+import datetime
 User = get_user_model()
 
 
@@ -76,7 +76,31 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         return value
 
 
-class LeavesSerializers(serializers.ModelSerializer):
+class LeaveBalanceSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Leaves
+        model = LeaveBalance
         fields = '__all__'
+
+
+class LeavesRequestSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = LeavesRequest
+        # fields = '__all__'
+        exclude = ('state',)
+
+    def validate_from_date(self, value):
+        """
+        From Date should not be before Todate
+        """
+        now = datetime.datetime.now()
+        if now < value:
+            raise serializers.ValidationError("From Date should be greater than present date")
+        return value
+
+    def validate(self, data):
+        """
+        Check that To Date is before From Date.
+        """
+        if data['to_date'] > data['from_date']:
+            raise serializers.ValidationError("To Date is Less Than From Date")
+        return data
